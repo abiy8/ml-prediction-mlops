@@ -46,5 +46,6 @@ def test_mlflow_records_candidates_and_test_run(tmp_path,monkeypatch):
     train(str(tmp_path/'tracked.joblib'),track=True)
     runs=mlflow.search_runs(experiment_names=['breast-cancer-baselines'])
     assert len(runs)==3
+    assert all('artifacts/mlflow' in uri for uri in runs['artifact_uri'])
     assert runs['metrics.validation_roc_auc'].notna().sum()==2
     assert runs['metrics.roc_auc'].notna().sum()==1
