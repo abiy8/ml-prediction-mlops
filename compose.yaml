@@ -1,0 +1,22 @@
+services:
+  train:
+    build: .
+    command: python train.py
+    env_file: .env
+    volumes: ["model-artifacts:/app/artifacts", "tracking-data:/app/data"]
+  api:
+    build: .
+    depends_on:
+      train:
+        condition: service_completed_successfully
+    ports: ["127.0.0.1:8000:8000"]
+    env_file: .env
+    volumes: ["model-artifacts:/app/artifacts", "tracking-data:/app/data"]
+  tracking:
+    build: .
+    command: mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri sqlite:///data/mlflow.db --artifacts-destination /app/artifacts/mlflow
+    ports: ["127.0.0.1:5000:5000"]
+    volumes: ["tracking-data:/app/data", "model-artifacts:/app/artifacts"]
+volumes:
+  model-artifacts:
+  tracking-data:
