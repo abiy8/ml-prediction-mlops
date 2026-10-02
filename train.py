@@ -26,7 +26,11 @@ def train(output="artifacts/model.joblib", track=True):
     Path("data").mkdir(exist_ok=True)
     if track:
         import mlflow
-        mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI","sqlite:///data/mlflow.db"));mlflow.set_experiment("breast-cancer-baselines")
+        mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI","sqlite:///data/mlflow.db"))
+        client=mlflow.MlflowClient()
+        if client.get_experiment_by_name("breast-cancer-baselines") is None:
+            client.create_experiment("breast-cancer-baselines",artifact_location=Path("artifacts/mlflow").resolve().as_uri())
+        mlflow.set_experiment("breast-cancer-baselines")
     for name,model in candidates.items():
         model.fit(X[train_idx],y[train_idx]);prob=model.predict_proba(X[val])[:,1]
         score=float(roc_auc_score(y[val],prob));validation[name]=score
